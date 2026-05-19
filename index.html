@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DecaKids Master Engine</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body class="bg-slate-50 text-slate-900">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        const initialStudents = [
+            { id: 1, name: "Hugo Torres", level: 3, xp: 450, skills: { locomocion: 45, estabilidad: 60, manipulacion: 30 }, fitness: { salto: 125, sprint: 4.8, rpe: 4 }, misiones: ["m1"] },
+            { id: 2, name: "Sofia Martin", level: 5, xp: 950, skills: { locomocion: 70, estabilidad: 50, manipulacion: 80 }, fitness: { salto: 140, sprint: 4.2, rpe: 8 }, misiones: [] },
+            { id: 3, name: "Mateo Rivas", level: 2, xp: 200, skills: { locomocion: 40, estabilidad: 40, manipulacion: 40 }, fitness: { salto: 110, sprint: 5.3, rpe: 3 }, misiones: [] }
+        ];
+
+        function App() {
+            const [students, setStudents] = useState(initialStudents);
+
+            const updateStudent = (id, tipo) => {
+                setStudents(prev => prev.map(s => {
+                    if (s.id !== id) return s;
+                    const newSkills = { ...s.skills, [tipo]: Math.min(s.skills[tipo] + 15, 100) };
+                    const newXp = s.xp + 150;
+                    return { ...s, skills: newSkills, xp: newXp, level: Math.floor(newXp / 200) + 1 };
+                }));
+            };
+
+            const exportData = () => {
+                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(students));
+                const a = document.createElement('a');
+                a.href = dataStr;
+                a.download = "datos_rendimiento_decakids.json";
+                a.click();
+            };
+
+            return (
+                <div className="max-w-5xl mx-auto p-4">
+                    <header className="flex justify-between items-center mb-8 border-b pb-4">
+                        <h1 className="text-2xl font-black text-indigo-900 uppercase">DecaKids Master Engine</h1>
+                        <button onClick={exportData} className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-xs font-bold shadow-lg">Exportar JSON</button>
+                    </header>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {students.map(s => (
+                            <div key={s.id} className="bg-white p-6 rounded-2xl border shadow-sm">
+                                <div className="flex justify-between items-start mb-4">
+                                    <div>
+                                        <h2 className="font-black text-lg">{s.name}</h2>
+                                        <span className="text-[10px] font-bold text-slate-400">NIVEL {s.level} | XP {s.xp}</span>
+                                    </div>
+                                    {s.fitness.rpe > 7 && (
+                                        <span className="bg-rose-100 text-rose-600 px-2 py-1 rounded text-[9px] font-black animate-pulse">FATIGA ALTA</span>
+                                    )}
+                                </div>
+
+                                <div className="space-y-3 mb-6">
+                                    {Object.entries(s.skills).map(([key, val]) => (
+                                        <div key={key}>
+                                            <div className="flex justify-between text-[10px] uppercase font-bold mb-1">
+                                                <span>{key}</span>
+                                                <span>{val}%</span>
+                                            </div>
+                                            <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                                                <div className="bg-indigo-500 h-full" style={{width: `${val}%`}}></div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-2">
+                                    <button onClick={() => updateStudent(s.id, 'locomocion')} className="text-[10px] font-bold bg-slate-800 text-white p-2 rounded-lg hover:bg-slate-700">+ Locomocion</button>
+                                    <button onClick={() => updateStudent(s.id, 'manipulacion')} className="text-[10px] font-bold bg-slate-800 text-white p-2 rounded-lg hover:bg-slate-700">+ Manipulacion</button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
